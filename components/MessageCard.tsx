@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
 import React from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { X } from 'lucide-react';
 
@@ -20,11 +20,12 @@ import {
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast'; 
 
-
 type MessageCardProps = {
   message: {
-    id: any;content:string,createdAt:Date
-};
+    id: string; // Change 'any' to 'string' for better type safety
+    content: string;
+    createdAt: Date;
+  };
   onMessageDelete: (messageId: string) => void;
 };
 
@@ -33,20 +34,16 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
 
   const handleDeleteConfirm = async () => {
     try {
-      const response = await axios.delete(
-        `/api/message-delete/${message.id}`
-      );
+      const response = await axios.delete(`/api/message-delete/${message.id}`);
       toast({
         title: response.data.message,
       });
       onMessageDelete(message.id);
-
-    } catch (error:any) {
-
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
       toast({
         title: 'Error',
-        description:
-          error.response?.data.message ?? 'Failed to delete message',
+        description: err.response?.data.message ?? 'Failed to delete message',
         variant: 'destructive',
       });
     } 
@@ -72,9 +69,7 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>
-                  Cancel
-                </AlertDialogCancel>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDeleteConfirm}>
                   Continue
                 </AlertDialogAction>

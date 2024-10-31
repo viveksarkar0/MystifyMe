@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -29,25 +29,28 @@ const parseStringMessages = (messageString: string): string[] => {
 const initialMessageString =
   "What's your favorite movie?||Do you have any pets?||What's your dream job?";
 
+interface MessageFormValues {
+  content: string;
+}
+
 export default function SendMessage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
 
-  const form = useForm({
+  const form = useForm<MessageFormValues>({
     defaultValues: {
       content: '',
     },
   });
 
   const messageContent = form.watch('content');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleMessageClick = (message: string) => {
     form.setValue('content', message);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  const onSubmit = async (data: { content: string }) => {
+  const onSubmit: SubmitHandler<MessageFormValues> = async (data) => {
     setIsLoading(true);
     try {
       const response = await axios.post('/api/send-message', {
@@ -60,12 +63,12 @@ export default function SendMessage() {
         variant: 'default',
       });
       form.reset({ content: '' });
-    } catch (error:any) {
-
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      const errorMessage = err.response?.data?.message || 'Error sending message';
       toast({
         title: 'Error',
-        description:
-         "Owner is not accepting message",
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -74,10 +77,8 @@ export default function SendMessage() {
   };
 
   return (
-    <div className="container mx-auto my-8 p-6  rounded max-w-4xl">
-      <h1 className="text-4xl font-bold mb-6 text-center">
-        Public Profile Link
-      </h1>
+    <div className="container mx-auto my-8 p-6 rounded max-w-4xl">
+      <h1 className="text-4xl font-bold mb-6 text-center">Public Profile Link</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField

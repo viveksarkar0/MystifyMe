@@ -28,10 +28,13 @@ const formSchema = z.object({
   }),
 });
 
+type FormData = z.infer<typeof formSchema>; // Type inference for the form data
+
 function ProfileForm() {
-  const router = useRouter()
+  const router = useRouter();
+  
   // Initialize the form with react-hook-form and zod schema
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
@@ -40,14 +43,15 @@ function ProfileForm() {
   });
 
   // Function to handle form submission
-  const onSubmit = async (data: { username: any; password: any; }) => {
+  const onSubmit = async (data: FormData) => {
     const result = await signIn("credentials", {
       redirect: false,
       identifier: data.username,
       password: data.password,
-
     });
-    router.push('/dashboard')
+
+    // Redirect to the dashboard on successful sign-in
+    router.push("/dashboard");
 
     // Handle result here (e.g., show error message if sign in failed)
     if (result?.error) {
@@ -60,7 +64,7 @@ function ProfileForm() {
   };
 
   return (
-    <div className="flex items-center justify-center h-[90vh]  ">
+    <div className="flex items-center justify-center h-[90vh]">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 bg-white p-8 rounded-lg shadow-md w-full max-w-md">
           {/* Username Field */}
@@ -92,7 +96,7 @@ function ProfileForm() {
                   <Input type="password" placeholder="Password" {...field} />
                 </FormControl>
                 <FormDescription>
-                  This is your account password. Make sure it s strong.
+                  This is your account password. Make sure it’s strong.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

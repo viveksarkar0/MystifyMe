@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import axios from "axios"; // Import axios
-
 import { useRouter } from "next/navigation";
 
 // Define the schema for the form
@@ -30,10 +29,13 @@ const formSchema = z.object({
   }),
 });
 
+type FormData = z.infer<typeof formSchema>; // Type inference for the form data
+
 function SignupForm() {
+  const router = useRouter();
+  
   // Initialize the form with react-hook-form and zod schema
-  const router = useRouter(); 
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
@@ -43,14 +45,13 @@ function SignupForm() {
   });
 
   // Function to handle form submission
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     try {
       const response = await axios.post("/api/sign-up", data); // Replace with your actual signup API route
       if (response.status === 201) {
         alert("Signup successful! Please log in.");
-        router.push('/dashboard')
+        router.push('/dashboard');
       }
-    
     } catch (error: any) {
       console.error("Signup error:", error);
       alert(error.response?.data?.message || "Signup failed. Please try again.");

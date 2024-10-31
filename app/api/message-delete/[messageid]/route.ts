@@ -40,8 +40,8 @@ export async function DELETE(
       { message: 'Message deleted', success: true },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Error deleting message:', error.message);
+  } catch (error) {
+    console.error('Error deleting message:', (error as Error).message);
     return NextResponse.json(
       { message: 'Error deleting message', success: false },
       { status: 500 }
