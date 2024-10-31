@@ -3,10 +3,12 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/db';
 
-// Define a custom interface for credentials
-interface UserCredentials {
-  identifier: string;
-  password: string;
+// Define a custom interface for the User
+interface User {
+  id: string; // Change id type to string
+  username: string;
+  email: string;
+  isAcceptingMessages: boolean; // Based on your schema
 }
 
 export const authOptions: NextAuthOptions = {
@@ -18,7 +20,7 @@ export const authOptions: NextAuthOptions = {
         identifier: { label: 'Username or Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials: UserCredentials | undefined): Promise<any> {
+      async authorize(credentials: Record<string, string> | undefined): Promise<User | null> {
         console.log('Credentials received:', credentials);
 
         if (!credentials) {
@@ -47,43 +49,46 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (isPasswordCorrect) {
-            return user;
+            // Return user object with id as a string
+            return {
+              id: user.id.toString(), // Convert id to string
+              username: user.username,
+              email: user.email,
+              isAcceptingMessages: user.isAcceptingMessages, // Include accepting messages status
+            };
           } else {
             throw new Error('Incorrect password');
           }
-        } catch (error) {
-          const errorMessage = (error as Error).message || 'An error occurred during authorization';
-          console.error('Authorization error:', errorMessage);
-          throw new Error(errorMessage);
+        } catch (err: any) {
+          console.error('Authorization error:', err);
+          throw new Error(err.message || 'An error occurred during authorization');
         }
-      },
+      }
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id.toString();
-        token.isVerified = user.isVerified;
-        token.isAcceptingMessages = user.isAcceptingMessages;
-        token.username = user.username;
+        token.id = user.id; // No need to convert here, it's already a string
+        token.isAcceptingMessages = user.isAcceptingMessages; // Add isAcceptingMessages to token
+        token.username = user.username; // Add username to token
       }
-      return token;
+      return token; // Return the modified token
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
-        session.user.isVerified = token.isVerified;
-        session.user.isAcceptingMessages = token.isAcceptingMessages;
-        session.user.username = token.username;
+        session.user.id = token.id; // Set user ID
+        session.user.isAcceptingMessages = token.isAcceptingMessages; // Set accepting messages status
+        session.user.username = token.username; // Set username
       }
-      return session;
+      return session; // Return the modified session
     },
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt', // Use JWT for session management
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET, // Your secret for NextAuth
   pages: {
-    signIn: '/sign-in',
+    signIn: '/sign-in', // Ensure this points to your custom sign-in page correctly
   },
 };

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import axios from "axios"; // Import axios
+import axios, { AxiosError } from "axios"; // Import Axios and AxiosError
 import { useRouter } from "next/navigation";
 
 // Define the schema for the form
@@ -52,9 +52,17 @@ function SignupForm() {
         alert("Signup successful! Please log in.");
         router.push('/dashboard');
       }
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      alert(error.response?.data?.message || "Signup failed. Please try again.");
+    } catch (error) {
+      // Check if the error is an AxiosError
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || "Signup failed. Please try again.";
+        console.error("Signup error:", errorMessage);
+        alert(errorMessage);
+      } else {
+        // Handle unexpected error types
+        console.error("An unexpected error occurred:", error);
+        alert("Signup failed. Please try again.");
+      }
     }
   };
 

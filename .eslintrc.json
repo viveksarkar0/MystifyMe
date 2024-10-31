@@ -1,8 +1,28 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"],
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "react/display-name": "off"
+    "@typescript-eslint/no-unused-vars": "off", // Disable warning for unused variables
+    "@typescript-eslint/no-explicit-any": "warn", // Warn about using 'any' type
+    "react/display-name": "off" // Disable warning for missing display names in components
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"], // Applies these settings specifically to TypeScript files
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off" // Disable warning for missing return types on functions
+      }
+    }
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
   }
 }
