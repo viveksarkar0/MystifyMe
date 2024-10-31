@@ -4,11 +4,11 @@ import { getServerSession } from 'next-auth/next';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(
-  request: NextRequest, 
-  context: { params: { messageid: string } } // Use context instead of destructuring
+  request: NextRequest,
+  context: any // Generalize the type for context
 ) {
-  const { messageid } = context.params; // Destructure messageid from context
-  const messageId = parseInt(messageid, 10); // Ensure messageId is a number
+  const { messageid } = context.params;
+  const messageId = parseInt(messageid, 10);
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -24,7 +24,7 @@ export async function DELETE(
     const deleteResult = await prisma.message.deleteMany({
       where: {
         id: messageId,
-        userId: userId, // Ensure `userId` is an integer
+        userId: userId,
       },
     });
 
