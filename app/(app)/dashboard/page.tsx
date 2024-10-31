@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { toast, useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { User } from 'next-auth';
 import { signOut, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -10,15 +10,23 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Loader2, RefreshCcw } from 'lucide-react';
 import { z } from 'zod';
+
+// Define message interface
 interface Message {
-  id: number;            // Message ID
-  content: string;       // Message content
-  createdAt: Date;     // Timestamp of when the message was created
-  userId: number;        // ID of the user who created the message
+  id: number;
+  content: string;
+  createdAt: Date;
+  userId: number;
 }
+
+// Define form schema interface
+const formSchema = z.object({
+  acceptMessages: z.boolean(),
+});
+
 const Dashboard = () => {
   const { toast } = useToast();
   const { data: session } = useSession();
@@ -26,27 +34,19 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
 
-  // Zod schema for the form
-  const formSchema = z.object({
-    acceptMessages: z.boolean()
-  });
-
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: { acceptMessages: false }
+    defaultValues: { acceptMessages: false },
   });
 
   const { register, watch, setValue } = form;
   const acceptMessages = watch('acceptMessages');
 
-  
-
   // Fetch messages function
   const fetchMessages = useCallback(async (refresh = false) => {
     setIsLoading(true);
     try {
-      const response = await axios.get('/api/get-message');
-      console.log(response.data.messages)
+      const response = await axios.get<{ messages: Message[] }>('/api/get-message');
       setMessages(response.data.messages || []);
       if (refresh) {
         toast({
@@ -54,12 +54,13 @@ const Dashboard = () => {
           description: 'Showing latest messages',
         });
       }
-    } catch (error:any) {
-      toast({
-        title: 'Error',
-        description: error.response?.data.message || 'Failed to fetch messages',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      const err = error as AxiosError;
+  toast({
+    title: 'Error',
+    description: (err.response?.data as { message: string })?.message || 'Failed to fetch messages',
+    variant: 'destructive',
+  });
     } finally {
       setIsLoading(false);
     }
@@ -69,12 +70,13 @@ const Dashboard = () => {
   const fetchAcceptMessages = useCallback(async () => {
     setIsSwitchLoading(true);
     try {
-      const response = await axios.get('/api/accept-messages');
+      const response = await axios.get<{ isAcceptingMessages: boolean }>('/api/accept-messages');
       setValue('acceptMessages', response.data.isAcceptingMessages);
-    } catch (error:any) {
+    } catch (error) {
+      const err = error as AxiosError;
       toast({
         title: 'Error',
-        description: error.response?.data.message || 'Failed to fetch message settings',
+        description: (err.response?.data as { message: string })?.message || 'Failed to fetch messages',
         variant: 'destructive',
       });
     } finally {
@@ -86,7 +88,7 @@ const Dashboard = () => {
   const handleSwitchChange = async () => {
     setIsSwitchLoading(true);
     try {
-      const response = await axios.post('/api/accept-messages', {
+      const response = await axios.post<{ message: string }>('/api/accept-messages', {
         acceptMessages: !acceptMessages,
       });
       setValue('acceptMessages', !acceptMessages);
@@ -94,10 +96,11 @@ const Dashboard = () => {
         title: response.data.message,
         variant: 'default',
       });
-    } catch (error:any) {
+    } catch (error) {
+      const err = error as AxiosError;
       toast({
         title: 'Error',
-        description: error.response?.data.message || 'Failed to update message settings',
+        description: (err.response?.data as { message: string })?.message || 'Failed to fetch messages',
         variant: 'destructive',
       });
     } finally {
@@ -113,16 +116,15 @@ const Dashboard = () => {
     }
   }, [session, fetchMessages, fetchAcceptMessages]);
 
-
   const handleDeleteMessage = (messageId: string) => {
-    setMessages(messages.filter((message:any) => message.id!== messageId));
+    setMessages(messages.filter((message: Message) => message.id.toString() !== messageId));
   };
-
   
   if (!session || !session.user) {
     return <div></div>;
   }
-  const { username } = session?.user as User;
+
+  const { username } = session.user as User;
   const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const profileUrl = `${baseUrl}/u/${username}`;
 
@@ -138,7 +140,7 @@ const Dashboard = () => {
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-slate-950 rounded w-full max-w-6xl mt-32">
       <h1 className="text-4xl font-bold mb-4 text-white">Welcome, {username}!</h1>
-      <button onClick={()=> signOut()} className='text-white'>sing ou</button>
+      <button onClick={() => signOut()} className='text-white'>Sign Out</button>
 
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2 text-white">Copy Your Unique Link</h2>
@@ -177,7 +179,7 @@ const Dashboard = () => {
           <RefreshCcw className="h-4 w-4" />
         )}
       </Button>
-     
+
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {messages.length > 0 ? (
           messages.map((message) => (
@@ -190,7 +192,7 @@ const Dashboard = () => {
         ) : (
           <p className="text-white">No messages to display.</p>
         )}
-      </div> 
+      </div>
     </div>
   );
 };

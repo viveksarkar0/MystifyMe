@@ -40,7 +40,7 @@ function ProfileForm() {
   });
 
   // Function to handle form submission
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: { username: any; password: any; }) => {
     const result = await signIn("credentials", {
       redirect: false,
       identifier: data.username,
@@ -92,7 +92,7 @@ function ProfileForm() {
                   <Input type="password" placeholder="Password" {...field} />
                 </FormControl>
                 <FormDescription>
-                  This is your account password. Make sure it's strong.
+                  This is your account password. Make sure it s strong.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
