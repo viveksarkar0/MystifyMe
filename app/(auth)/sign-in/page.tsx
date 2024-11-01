@@ -64,7 +64,7 @@ function ProfileForm() {
   };
 
   return (
-    <div className="flex items-center justify-center h-[90vh]">
+    <div className="flex items-center justify-center h-[90vh] mt-20">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 bg-white p-8 rounded-lg shadow-md w-full max-w-md">
           {/* Username Field */}
