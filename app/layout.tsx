@@ -4,6 +4,7 @@ import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
 
 import { Toaster } from "@/components/ui/toaster";
+import { Navbar } from "@/components/Navbar";
 
 
 const geistSans = localFont({
@@ -37,7 +38,7 @@ export default function RootLayout({
       >
         
           <AuthProvider>
-           
+           <Navbar/>
             {children}
             <Toaster />
           </AuthProvider>
