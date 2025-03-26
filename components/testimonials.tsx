@@ -69,12 +69,14 @@ export function Testimonials() {
       duration: 0.3,
       stagger: 0.1,
       onComplete: () => {
-        gsap.to(carouselRef.current?.children, {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.1,
-        })
+        if (carouselRef.current?.children) {
+          gsap.to(carouselRef.current.children, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.1,
+          })
+        }
       },
     })
   }, [currentIndex])
@@ -95,7 +97,7 @@ export function Testimonials() {
                 <Star key={i + testimonials[currentIndex].rating} className="h-5 w-5 text-gray-400" />
               ))}
             </div>
-            <p className="text-lg text-center mb-6">"{testimonials[currentIndex].content}"</p>
+            <p className="text-lg text-center mb-6">&quot;{testimonials[currentIndex].content}&quot;</p>
             <div className="text-center">
               <p className="font-semibold">{testimonials[currentIndex].name}</p>
               <p className="text-sm text-gray-400">{testimonials[currentIndex].role}</p>

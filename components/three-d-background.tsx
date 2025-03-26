@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import { gsap } from "gsap"
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+
 
 export function ThreeDBackground() {
   const containerRef = useRef<HTMLDivElement>(null)
